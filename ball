@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Oct  2 06:16:34 2019
+
+@author: student
+"""
+#gravitation func
+from graph import *
+import math
+import random
+w, h = windowSize()
+x = 20
+y = h / 3
+velocity_x = 60
+velocity_y = 40
+a = 10
+dt = 0.1
+time = 0
+dx = 0
+dy = 0
+x = random.randint(10, w-10)
+y = random.randint(10, h-20)
+k = 0.1
+def main():
+    global dt
+    balls()
+def balls():
+    global time
+    global x
+    global y
+    global velocity_x
+    global velocity_y
+    global a
+    brushColor(100, 100,200)
+    rectangle(0, 0, w, h)
+    line(0,h, w-20, h)
+    brushColor(random.randint(1, 255), random.randint(1, 255), random.randint(1, 255))
+    if (x < 5 or x > w - 5):
+       velocity_x = 0
+    if (y < 5 or y > h - 5):
+       velocity_y = 0 
+    else:
+        velocity_y -= (a * dt + velocity_y * k * dt)
+    velocity_x -= (velocity_x * k * dt)
+    dx = velocity_x * dt
+    dy = velocity_y * dt
+    x += dx
+    y -= dy
+    circle(x, y, 15)
+    time += dt
+    reflection(x, y, velocity_y, velocity_x)
+    if (x > w - 20 or x < 20):
+        velocity_x = - velocity_x
+    
+    if ((y > h - 20) or (y < 20)):
+        velocity_y = - velocity_y       
+        
+onTimer(balls, 1)
+run()
