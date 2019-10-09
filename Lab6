@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Oct  9 06:30:40 2019
+
+@author: student
+"""
+
+from tkinter import *
+from random import randrange as rnd, choice, randint
+import time
+root = Tk()
+root.geometry('800x600')
+score = 0
+dx = 1
+dy = -1
+flag = False
+w = 1
+canv = Canvas(root,bg='white')
+canv.pack(fill=BOTH, expand=1)
+colors = ['red','orange','yellow','green','blue']
+x = rnd(100,700) 
+y = rnd(100,500)
+r = rnd(30,50)
+l = Label(root, bg='black', fg='white', width=20)
+
+def new_ball():
+    global x
+    global y
+    global r
+    global dx
+    global dy
+    global flag
+    bx = dx * randint(5, 15)
+    by = dy * randint(5, 15)
+    if flag == True:
+       x = rnd(100,700) 
+       y = rnd(100,500)
+       r = rnd(60,80) / w * 2 
+       if randint(-10, 20) > 0:
+           dx = -dx
+       if randint(-10, 20) > 0:
+           dy = -dy    
+    canv.delete(ALL)
+    canv.create_oval(x-r,y-r,x+r,y+r,fill = 'blue', width=0)
+    root.after(80, new_ball)
+    if (x + r + bx >= 800 or x - r + bx <= 0):
+        dx = -dx
+    else:
+        x += bx
+    if (y + r + by >= 600 or y - r + by <= 0):
+       dy = -dy
+    else:
+        y += by
+    flag = False
+
+def click(event):
+    global score
+    global w
+    global flag
+    mouse_x = event.x
+    mouse_y = event.y
+    if ((x - mouse_x)**2  + (y - mouse_y)**2  <= r**2):
+        score +=1
+        w += 1
+        flag = True
+    else:
+        score -= 1
+    l['text'] = str(score)
+        
+        
+    
+l.pack()
+new_ball()
+canv.bind('<Button-1>', click)
+mainloop()
