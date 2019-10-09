@@ -1,76 +1,60 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct  9 06:30:40 2019
+Created on Wed Oct  2 06:16:34 2019
 
 @author: student
 """
-
-from tkinter import *
-from random import randrange as rnd, choice, randint
-import time
-root = Tk()
-root.geometry('800x600')
-score = 0
-dx = 1
-dy = -1
-flag = False
-w = 1
-canv = Canvas(root,bg='white')
-canv.pack(fill=BOTH, expand=1)
-colors = ['red','orange','yellow','green','blue']
-x = rnd(100,700) 
-y = rnd(100,500)
-r = rnd(30,50)
-l = Label(root, bg='black', fg='white', width=20)
-
-def new_ball():
+#gravitation func
+from graph import *
+import math
+import random
+w, h = windowSize()
+x = 20
+y = h / 3
+velocity_x = 60
+velocity_y = 40
+a = 10
+dt = 0.1
+time = 0
+dx = 0
+dy = 0
+x = random.randint(10, w-10)
+y = random.randint(10, h-20)
+k = 0.1
+def main():
+    global dt
+    balls()
+def balls():
+    global time
     global x
     global y
-    global r
-    global dx
-    global dy
-    global flag
-    bx = dx * randint(5, 15)
-    by = dy * randint(5, 15)
-    if flag == True:
-       x = rnd(100,700) 
-       y = rnd(100,500)
-       r = rnd(60,80) / w * 2 
-       if randint(-10, 20) > 0:
-           dx = -dx
-       if randint(-10, 20) > 0:
-           dy = -dy    
-    canv.delete(ALL)
-    canv.create_oval(x-r,y-r,x+r,y+r,fill = 'blue', width=0)
-    root.after(80, new_ball)
-    if (x + r + bx >= 800 or x - r + bx <= 0):
-        dx = -dx
+    global velocity_x
+    global velocity_y
+    global a
+    brushColor(100, 100,200)
+    rectangle(0, 0, w, h)
+    line(0,h, w-20, h)
+    brushColor(random.randint(1, 255), random.randint(1, 255), random.randint(1, 255))
+    if (x < 5 or x > w - 5):
+       velocity_x = 0
+    if (y < 5 or y > h - 5):
+       velocity_y = 0 
     else:
-        x += bx
-    if (y + r + by >= 600 or y - r + by <= 0):
-       dy = -dy
-    else:
-        y += by
-    flag = False
-
-def click(event):
-    global score
-    global w
-    global flag
-    mouse_x = event.x
-    mouse_y = event.y
-    if ((x - mouse_x)**2  + (y - mouse_y)**2  <= r**2):
-        score +=1
-        w += 1
-        flag = True
-    else:
-        score -= 1
-    l['text'] = str(score)
-        
-        
+        velocity_y -= (a * dt + velocity_y * k * dt)
+    velocity_x -= (velocity_x * k * dt)
+    dx = velocity_x * dt
+    dy = velocity_y * dt
+    x += dx
+    y -= dy
+    circle(x, y, 15)
+    time += dt
+    reflection(x, y, velocity_y, velocity_x)
+    if (x > w - 20 or x < 20):
+        velocity_x = - velocity_x
     
-l.pack()
-new_ball()
-canv.bind('<Button-1>', click)
-mainloop()
+    if ((y > h - 20) or (y < 20)):
+        velocity_y = - velocity_y       
+        
+onTimer(balls, 1)
+run()
