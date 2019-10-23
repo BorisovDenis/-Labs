@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Oct 23 06:41:04 2019
+
+@author: student
+"""
+
 from tkinter import *
 from random import randrange as rnd, choice
 import random as r
@@ -7,7 +15,7 @@ c = Canvas(root, width=800, height=700, bg='white')
 width = 800
 height = 700
 score = 0
-n = rnd(3, 7)
+n = rnd(3, 15)
 balls = [0] * n
 flag = True
 c.pack()
@@ -71,8 +79,10 @@ def Animation():
     root.after(30, Animation)
 
 def start_game(event):
+    global flag
     global score
     c.delete(ALL)
+    flag = True
     score = 0
     score_label['text'] = ''
     score_label.pack()
@@ -84,6 +94,7 @@ def start_game(event):
 
 
 def click(event):
+    global cloud_list
     global x, y, score, flag
     x = event.x
     y = event.y
@@ -100,10 +111,12 @@ def click(event):
             score_label['text'] = 'Failed with score:' + str(score)
             c.delete(ALL)
             flag = False
+            cloud_list.clear()
 
 
 
 def fog_generation():
+    global cloud_list
     global cloud_number
     for i in range(cloud_number):
 
@@ -118,9 +131,11 @@ def fog_generation():
         cloud_list.append([cloud, cloud_speed, cloud_length, cloud_y])
 
 
-def fog_animation():  
+def fog_animation(): 
     global flag
+    global cloud_list
     if flag:
+        print("animate fog", len(cloud_list), c.coords(cloud_list[0][0]))
         for i in range(cloud_number):
             c.move(cloud_list[i][0], cloud_list[i][1], 0)
             if c.coords(cloud_list[i][0])[2] < 0:
