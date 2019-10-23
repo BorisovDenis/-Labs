@@ -1,60 +1,142 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Oct  2 06:16:34 2019
+from tkinter import *
+from random import randrange as rnd, choice
+import random as r
+root = Tk()
 
-@author: student
-"""
-#gravitation func
-from graph import *
-import math
-import random
-w, h = windowSize()
-x = 20
-y = h / 3
-velocity_x = 60
-velocity_y = 40
-a = 10
-dt = 0.1
-time = 0
-dx = 0
-dy = 0
-x = random.randint(10, w-10)
-y = random.randint(10, h-20)
-k = 0.1
+c = Canvas(root, width=800, height=700, bg='white')
+width = 800
+height = 700
+score = 0
+n = rnd(3, 7)
+balls = [0] * n
+flag = True
+c.pack()
+root.geometry('800x700')
+start_button = Button(root, text="Start", height=3, width=10)
+colors = ['green','blue', 'red', 'pink', 'orange','yellow', 'brown']
+cloud_color = ['snow', 'ghost white', 'white smoke', 'gainsboro', 'dim gray',
+               'slate gray', 'light slate gray', 'gray', 'light grey', 'midnight blue', 'navy', 'cornflower blue',
+               'dark slate blue', 'slate blue', 'medium slate blue', 'light slate blue', 'medium blue', 'royal blue',
+               'blue', 'dodger blue', 'deep sky blue', 'sky blue',
+               'cyan', 'light cyan', 'cadet blue', 'medium aquamarine']
+cloud_list = []
+cloud_number = r.randint(15, 30)
+score_label = Label(root, bg='black', fg='white', width=20)
+
+class Ball:
+    def __init__(self):
+        self.x = rnd(50, width - 50)
+        self.y = rnd(50, height - 50)
+        self.vx = rnd(-10, 10) * (score + 1)
+        self.vy = rnd(-10, 10) * (score + 1)
+        self.r = rnd(20, 50)
+        self.obj = c.create_oval(self.x - self.r, self.y - self.r, self.x + self.r, self.y + self.r, fill = choice(colors), width = 0)
+
+
+    def collision(self):
+        if self.x + self.r >= width and self.vx > 0:
+            self.vx = -self.vx
+
+        if self.x - self.r <= 0 and self.vx < 0:
+            self.vx = -self.vx
+
+        if self.y + self.r >= height and self.vy > 0:
+            self.vy = -self.vy
+
+        if self.y - self.r <= 0 and self.vy < 0:
+            self.vy = -self.vy
+
+
+
+    def MoveBall(self):
+        c.move(self.obj, self.vx, self.vy)
+        self.y += self.vy
+        self.x += self.vx
+
+
+
+def balls_init():
+    global balls
+    for i in range(n):
+        balls[i] = Ball()
+
+
+
+def Animation():
+    global balls
+    for i in range(n):
+        balls[i].MoveBall()
+        balls[i].collision()
+
+    root.after(30, Animation)
+
+def start_game(event):
+    global score
+    c.delete(ALL)
+    score = 0
+    score_label['text'] = ''
+    score_label.pack()
+    balls_init()
+    Animation()
+    fog_generation()
+    root.after(60, fog_animation)
+
+
+
+def click(event):
+    global x, y, score, flag
+    x = event.x
+    y = event.y
+    N = 0
+    N = score
+    if flag:
+        for i in range(n):
+            if (x - balls[i].x)**2 + (y - balls[i].y)**2 <= balls[i].r**2:
+                score += 1
+                score_label['text'] = str(score) + ' '
+                c.delete(balls[i].obj)
+                balls[i] = Ball()
+        if (N == score):
+            score_label['text'] = 'Failed with score:' + str(score)
+            c.delete(ALL)
+            flag = False
+
+
+
+def fog_generation():
+    global cloud_number
+    for i in range(cloud_number):
+
+
+        cloud_speed = r.randint(-20, -15)
+        cloud_length = r.randint(50, 200)
+        cloud_x = r.randint(0, 800)
+        cloud_y = r.randint(0, 600)
+
+        cloud = c.create_line(cloud_x, cloud_y, cloud_x + cloud_length, cloud_y, fill=r.choice(cloud_color),
+                              width=20)
+        cloud_list.append([cloud, cloud_speed, cloud_length, cloud_y])
+
+
+def fog_animation():  
+    global flag
+    if flag:
+        for i in range(cloud_number):
+            c.move(cloud_list[i][0], cloud_list[i][1], 0)
+            if c.coords(cloud_list[i][0])[2] < 0:
+                cloud_y = r.randint(360, 600)
+                c.move(cloud_list[i][0], 800 + cloud_list[i][2], 0)
+
+        root.after(60, fog_animation)
+
+
 def main():
-    global dt
-    balls()
-def balls():
-    global time
-    global x
-    global y
-    global velocity_x
-    global velocity_y
-    global a
-    brushColor(100, 100,200)
-    rectangle(0, 0, w, h)
-    line(0,h, w-20, h)
-    brushColor(random.randint(1, 255), random.randint(1, 255), random.randint(1, 255))
-    if (x < 5 or x > w - 5):
-       velocity_x = 0
-    if (y < 5 or y > h - 5):
-       velocity_y = 0 
-    else:
-        velocity_y -= (a * dt + velocity_y * k * dt)
-    velocity_x -= (velocity_x * k * dt)
-    dx = velocity_x * dt
-    dy = velocity_y * dt
-    x += dx
-    y -= dy
-    circle(x, y, 15)
-    time += dt
-    reflection(x, y, velocity_y, velocity_x)
-    if (x > w - 20 or x < 20):
-        velocity_x = - velocity_x
-    
-    if ((y > h - 20) or (y < 20)):
-        velocity_y = - velocity_y       
-        
-onTimer(balls, 1)
-run()
+    c.bind('<Button-1>', click)
+    score_label['text'] = ''
+    score_label.pack()
+    start_button.bind('<Button-1>', start_game)
+    start_button.pack()
+
+
+main()
+mainloop()
