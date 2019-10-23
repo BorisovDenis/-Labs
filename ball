@@ -33,15 +33,15 @@ score_label = Label(root, bg='black', fg='white', width=20)
 
 class Ball:
     def __init__(self):
-        self.x = rnd(50, width - 50)
-        self.y = rnd(50, height - 50)
+        self.x = rnd(90, width - 90)
+        self.y = rnd(90, height - 90)
         self.vx = rnd(-10, 10) * (score + 1)
         self.vy = rnd(-10, 10) * (score + 1)
         self.r = rnd(20, 50)
         self.obj = c.create_oval(self.x - self.r, self.y - self.r, self.x + self.r, self.y + self.r, fill = choice(colors), width = 0)
 
 
-    def collision(self):
+    def Collision(self):
         if self.x + self.r >= width and self.vx > 0:
             self.vx = -self.vx
 
@@ -74,7 +74,7 @@ def Animation():
     global balls
     for i in range(n):
         balls[i].MoveBall()
-        balls[i].collision()
+        balls[i].Collision()
 
     root.after(30, Animation)
 
