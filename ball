@@ -1,26 +1,21 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Oct 23 06:41:04 2019
-@author: student
-"""
-
 from tkinter import *
 from random import randrange as rnd, choice
 import random as r
+
 root = Tk()
 
-c = Canvas(root, width=800, height=700, bg='white')
-width = 800
+c = Canvas(root, width=600, height=500, bg='white')
+width = 600
 height = 700
 score = 0
 n = rnd(3, 15)
 balls = [0] * n
+job = None
 flag = True
 c.pack()
-root.geometry('800x700')
+root.geometry('600x700')
 start_button = Button(root, text="Start", height=3, width=10)
-colors = ['green','blue', 'red', 'pink', 'orange','yellow', 'brown']
+colors = ['green', 'blue', 'red', 'pink', 'orange', 'yellow', 'brown']
 cloud_color = ['snow', 'ghost white', 'white smoke', 'gainsboro', 'dim gray',
                'slate gray', 'light slate gray', 'gray', 'light grey', 'midnight blue', 'navy', 'cornflower blue',
                'dark slate blue', 'slate blue', 'medium slate blue', 'light slate blue', 'medium blue', 'royal blue',
@@ -30,15 +25,16 @@ cloud_list = []
 cloud_number = r.randint(15, 30)
 score_label = Label(root, bg='black', fg='white', width=20)
 
+
 class Ball:
     def __init__(self):
         self.x = rnd(90, width - 90)
         self.y = rnd(90, height - 90)
-        self.vx = rnd(-10, 10) * (score // 3+ 1)
-        self.vy = rnd(-10, 10) * (score // 3 + 1)
+        self.vx = rnd(-10, 10) + (score // 2)
+        self.vy = rnd(-10, 10) + (score // 2)
         self.r = rnd(20, 50)
-        self.obj = c.create_oval(self.x - self.r, self.y - self.r, self.x + self.r, self.y + self.r, fill = choice(colors), width = 0)
-
+        self.obj = c.create_oval(self.x - self.r, self.y - self.r, self.x + self.r, self.y + self.r,
+                                 fill=choice(colors), width=0)
 
     def Collision(self):
         if self.x + self.r >= width and self.vx > 0:
@@ -47,19 +43,16 @@ class Ball:
         if self.x - self.r <= 0 and self.vx < 0:
             self.vx = -self.vx
 
-        if self.y + self.r >= height and self.vy > 0:
+        if self.y + self.r >= height - 199 and self.vy > 0:
             self.vy = -self.vy
 
         if self.y - self.r <= 0 and self.vy < 0:
             self.vy = -self.vy
 
-
-
     def MoveBall(self):
         c.move(self.obj, self.vx, self.vy)
         self.y += self.vy
         self.x += self.vx
-
 
 
 def balls_init():
@@ -68,19 +61,35 @@ def balls_init():
         balls[i] = Ball()
 
 
-
 def Animation():
     global balls
     for i in range(n):
         balls[i].MoveBall()
         balls[i].Collision()
+    if flag:
+        root()
 
-    root.after(30, Animation)
+
+def cancel():
+    global job
+    job = root.after_cancel(job)
+    job = None
+
+
+def root():
+    global job
+    job = root.after(30, Animation)
+
 
 def start_game(event):
+    global cloud_list
     global flag
     global score
+    print('start')
     c.delete(ALL)
+    kill_balls()
+    cloud_list.clear()
+    cancel()
     flag = True
     score = 0
     score_label['text'] = ''
@@ -88,8 +97,13 @@ def start_game(event):
     balls_init()
     Animation()
     fog_generation()
-    root.after(60, fog_animation)
+    root.after(58, fog_animation)
+    root()
 
+
+def kill_balls():
+    for i in range(n):
+        balls.clear()
 
 
 def click(event):
@@ -97,48 +111,46 @@ def click(event):
     global x, y, score, flag
     x = event.x
     y = event.y
-    N = 0
     N = score
     if flag:
         for i in range(n):
-            if (x - balls[i].x)**2 + (y - balls[i].y)**2 <= balls[i].r**2:
+            if (x - balls[i].x) ** 2 + (y - balls[i].y) ** 2 <= balls[i].r ** 2:
                 score += 1
                 score_label['text'] = str(score) + ' '
                 c.delete(balls[i].obj)
                 balls[i] = Ball()
-        if (N == score):
+        if N == score:
             score_label['text'] = 'Failed with score:' + str(score)
             c.delete(ALL)
             flag = False
             cloud_list.clear()
 
 
+class Cloud:
+    def __init__(self):
+        self.speed = r.randint(-20, -15)
+        self.length = r.randint(50, 200)
+        self.x = r.randint(0, 800)
+        self.y = r.randint(0, 600)
+        self.obj = c.create_line(self.x, self.y, self.x + self.length, self.y, fill=r.choice(cloud_color),
+                                 width=20)
+
 
 def fog_generation():
     global cloud_list
     global cloud_number
     for i in range(cloud_number):
+        cloud = Cloud()
+        cloud_list.append([cloud.obj, cloud.speed, cloud.length, cloud.y])
 
 
-        cloud_speed = r.randint(-20, -15)
-        cloud_length = r.randint(50, 200)
-        cloud_x = r.randint(0, 800)
-        cloud_y = r.randint(0, 600)
-
-        cloud = c.create_line(cloud_x, cloud_y, cloud_x + cloud_length, cloud_y, fill=r.choice(cloud_color),
-                              width=20)
-        cloud_list.append([cloud, cloud_speed, cloud_length, cloud_y])
-
-
-def fog_animation(): 
+def fog_animation():
     global flag
     global cloud_list
     if flag:
-        print("animate fog", len(cloud_list), c.coords(cloud_list[0][0]))
         for i in range(cloud_number):
             c.move(cloud_list[i][0], cloud_list[i][1], 0)
             if c.coords(cloud_list[i][0])[2] < 0:
-                cloud_y = r.randint(360, 600)
                 c.move(cloud_list[i][0], 800 + cloud_list[i][2], 0)
 
         root.after(60, fog_animation)
