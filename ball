@@ -31,8 +31,8 @@ class Ball:
     def __init__(self):
         self.x = rnd(90, width - 90)
         self.y = rnd(90, height - 90)
-        self.vx = rnd(-10, 10) + (score // 2)
-        self.vy = rnd(-10, 10) + (score // 2)
+        self.vx = rnd(-10, 10) + (score // 2) + 1
+        self.vy = rnd(-10, 10) + (score // 2) + 1
         self.r = rnd(20, 50)
         self.obj = c.create_oval(self.x - self.r, self.y - self.r, self.x + self.r, self.y + self.r,
                                  fill=choice(colors), width=0)
@@ -99,7 +99,6 @@ def start_game(event):
     global cloud_list
     global flag
     global score
-    print('start')
     c.delete(ALL)
     kill_balls()
     cloud_list.clear()
@@ -149,13 +148,16 @@ class Cloud:
         self.obj = c.create_line(self.x, self.y, self.x + self.length, self.y, fill=r.choice(cloud_color),
                                  width=20)
 
+    def move_cloud(self):
+        c.move(self.obj, self.speed, 0)
+        self.x += self.speed
+
 
 def fog_generation():
     global cloud_list
     global cloud_number
     for i in range(cloud_number):
-        cloud = Cloud()
-        cloud_list.append([cloud.obj, cloud.speed, cloud.length, cloud.y])
+        cloud_list.append(Cloud())
 
 
 def fog_animation():
@@ -163,9 +165,10 @@ def fog_animation():
     global cloud_list
     if flag:
         for i in range(cloud_number):
-            c.move(cloud_list[i][0], cloud_list[i][1], 0)
-            if c.coords(cloud_list[i][0])[2] < 0:
-                c.move(cloud_list[i][0], 800 + cloud_list[i][2], 0)
+            cloud_list[i].move_cloud()
+            if cloud_list[i].x + cloud_list[i].length < -5:
+                cloud_list[i].x = 605
+                c.coords(cloud_list[i].obj, cloud_list[i].x, cloud_list[i].y, cloud_list[i].x + cloud_list[i].length, cloud_list[i].y)
 
         root_fog()
 
