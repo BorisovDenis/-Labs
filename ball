@@ -11,6 +11,7 @@ score = 0
 n = rnd(3, 15)
 balls = [0] * n
 job = None
+job_fog = None
 flag = True
 c.pack()
 root.geometry('600x700')
@@ -58,7 +59,7 @@ class Ball:
 def balls_init():
     global balls
     for i in range(n):
-        balls[i] = Ball()
+        balls.append(Ball())
 
 
 def Animation():
@@ -67,16 +68,29 @@ def Animation():
         balls[i].MoveBall()
         balls[i].Collision()
     if flag:
-        root()
+        root_anim()
 
 
-def cancel():
+def cancel_timer():
     global job
-    job = root.after_cancel(job)
+    if job:
+        root.after_cancel(job)
     job = None
 
 
-def root():
+def root_fog():
+    global job_fog
+    job_fog = root.after(58, fog_animation)
+
+
+def root_kill_fog_timer():
+    global job_fog
+    if job_fog:
+        root.after_cancel(job_fog)
+    job_fog = None
+
+
+def root_anim():
     global job
     job = root.after(30, Animation)
 
@@ -89,16 +103,16 @@ def start_game(event):
     c.delete(ALL)
     kill_balls()
     cloud_list.clear()
-    cancel()
+    cancel_timer()
+    root_kill_fog_timer()
     flag = True
     score = 0
     score_label['text'] = ''
     score_label.pack()
     balls_init()
-    Animation()
     fog_generation()
-    root.after(58, fog_animation)
-    root()
+    Animation()
+    root_fog()
 
 
 def kill_balls():
@@ -153,7 +167,7 @@ def fog_animation():
             if c.coords(cloud_list[i][0])[2] < 0:
                 c.move(cloud_list[i][0], 800 + cloud_list[i][2], 0)
 
-        root.after(60, fog_animation)
+        root_fog()
 
 
 def main():
@@ -163,6 +177,8 @@ def main():
     start_button.bind('<Button-1>', start_game)
     start_button.pack()
 
+
+print("hello")
 
 main()
 mainloop()
